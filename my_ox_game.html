@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe (เกม OX) 💜</title>
+    
+    <style>
+        /* CSS สำหรับความสวยงามด้วยสีม่วงพาสเทลและองค์ประกอบน่ารัก */
+        @import url('https://fonts.googleapis.com/css2?family=Mali:wght@400;700&display=swap'); /* ใช้ฟอนต์ Mali เพื่อความน่ารัก */
+
+        body {
+            font-family: 'Mali', cursive, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #e0f2f7; /* ฟ้าอ่อนมาก */
+            color: #5d3a77; /* ม่วงเข้มสำหรับข้อความ */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="10" cy="10" r="5" fill="%23ccbce3" opacity="0.4"/><circle cx="50" cy="50" r="5" fill="%23ccbce3" opacity="0.4"/><circle cx="90" cy="90" r="5" fill="%23ccbce3" opacity="0.4"/><circle cx="10" cy="90" r="5" fill="%23ccbce3" opacity="0.4"/><circle cx="90" cy="10" r="5" fill="%23ccbce3" opacity="0.4"/></svg>'); /* ลายจุดม่วงอ่อนๆ */
+            background-size: 50px 50px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px; /* ขอบโค้งมนมากขึ้น */
+            box-shadow: 0 15px 30px rgba(93, 58, 119, 0.15); /* เงาสีม่วงอ่อน */
+            text-align: center;
+            border: 2px solid #ccbce3; /* กรอบสีม่วงพาสเทล */
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            overflow: hidden; /* ซ่อนองค์ประกอบที่เกินขอบ */
+        }
+
+        .container::before { /* ตกแต่งมุมบนซ้าย */
+            content: '💜';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 3em;
+            opacity: 0.7;
+            transform: rotate(-20deg);
+        }
+        .container::after { /* ตกแต่งมุมล่างขวา */
+            content: '✨';
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            font-size: 2.5em;
+            opacity: 0.7;
+            transform: rotate(10deg);
+        }
+
+        h1 {
+            color: #8c52ff; /* ม่วงสดใส */
+            margin-bottom: 25px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px #f0e6ff; /* เงาข้อความสีม่วงอ่อน */
+        }
+
+        .controls {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px dashed #ccbce3; /* กรอบเส้นประน่ารัก */
+            border-radius: 12px;
+            background-color: #f8f0ff; /* ม่วงอ่อนมาก */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* เพิ่มระยะห่างระหว่าง Control */
+        }
+
+        .controls label {
+            color: #5d3a77;
+            font-weight: bold;
+        }
+
+        .controls select, .controls button {
+            margin: 0; /* ลบ margin เก่า */
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: 'Mali', cursive;
+            font-size: 1em;
+            border: 1px solid #ccbce3;
+            background-color: #f0e6ff; /* ม่วงอ่อน */
+            color: #5d3a77;
+            transition: all 0.3s ease;
+        }
+
+        .controls button {
+            background-color: #9c73e6; /* ม่วงกลาง */
+            color: white;
+            cursor: pointer;
+            border: none; /* ลบ border ออก */
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls select:hover, .controls button:hover {
+            background-color: #b193f4; /* ม่วงเข้มขึ้นเมื่อ hover */
+            transform: translateY(-2px); /* ยกขึ้นเล็กน้อย */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #difficulty-settings {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+            gap: 5px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 8px; /* เพิ่มระยะห่างระหว่างช่อง */
+            margin: 25px auto;
+            border: 5px solid #a37dfa; /* กรอบกระดานสีม่วงเข้ม */
+            background-color: #a37dfa;
+            border-radius: 15px; /* กระดานโค้งมน */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fefefe; /* ขาวสว่าง */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em; /* ขนาดตัวอักษรใหญ่ขึ้น */
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border-radius: 10px; /* ช่องก็โค้งมน */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); /* เงาด้านใน */
+        }
+
+        .cell:hover {
+            background-color: #f0e6ff; /* ม่วงอ่อนเมื่อ hover */
+            transform: scale(1.03); /* ขยายเล็กน้อย */
+        }
+
+        .cell.X {
+            color: #ff69b4; /* ชมพูสดใสสำหรับ X */
+            text-shadow: 2px 2px #ffe0f0;
+        }
+
+        .cell.O {
+            color: #87cefa; /* ฟ้าอ่อนน่ารักสำหรับ O */
+            text-shadow: 2px 2px #e0f2ff;
+        }
+
+        .status {
+            font-size: 1.8em; /* ขนาดใหญ่ขึ้น */
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: #f0e6ff; /* ม่วงอ่อนมาก */
+            color: #8c52ff; /* ม่วงสดใส */
+            border: 1px solid #ccbce3;
+            animation: pulse 1.5s infinite alternate; /* เพิ่ม animation */
+        }
+
+        .status.win {
+            background-color: #d4f8e0; /* เขียวพาสเทล */
+            color: #4CAF50;
+            border-color: #98ff98;
+            animation: bounceIn 0.8s forwards;
+        }
+
+        .status.draw {
+            background-color: #fff9e0; /* เหลืองพาสเทล */
+            color: #FFC107;
+            border-color: #ffe8b3;
+            animation: shake 0.5s;
+        }
+
+        /* Keyframe Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.02); opacity: 0.95; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            75% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>เกม Tic-Tac-Toe (OX) 💜</h1>
+        
+        <div class="controls">
+            <label for="gameMode">โหมดเกม:</label>
+            <select id="gameMode" onchange="handleGameModeChange()">
+                <option value="human">เล่นกับเพื่อน</option>
+                <option value="bot">เล่นกับบอท</option>
+            </select>
+
+            <div id="difficulty-settings" style="display: none;">
+                <label for="difficulty">ระดับความยาก:</label>
+                <select id="difficulty" onchange="handleDifficultyChange()">
+                    <option value="easy">ง่าย</option>
+                    <option value="medium">ปานกลาง</option>
+                    <option value="hard">ยาก</option>
+                </select>
+            </div>
+            
+            <button onclick="resetGame()">เริ่มเกมใหม่</button>
+        </div>
+
+        <div id="board" class="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+
+        <div id="status" class="status">ตาของผู้เล่น X</div>
+    </div>
+
+    <script>
+        // --- ตัวแปรหลักของเกม ---
+        let boardState = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
+        let gameMode = 'human'; // 'human' หรือ 'bot'
+        let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+
+        const cells = document.querySelectorAll('.cell');
+        const statusDisplay = document.getElementById('status');
+        const gameModeSelect = document.getElementById('gameMode');
+        const difficultySelect = document.getElementById('difficulty');
+        const difficultySettings = document.getElementById('difficulty-settings');
+
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // แนวนอน
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // แนวตั้ง
+            [0, 4, 8], [2, 4, 6]  // แนวทะแยง
+        ];
+
+        // --- ฟังก์ชันแสดงผลและควบคุม ---
+
+        function handleStatusDisplay(message, type = '') {
+            statusDisplay.innerHTML = message;
+            statusDisplay.className = 'status ' + type;
+        }
+
+        function handleGameModeChange() {
+            gameMode = gameModeSelect.value;
+            if (gameMode === 'bot') {
+                difficultySettings.style.display = 'flex'; // เปลี่ยนเป็น flex เพื่อให้อยู่ในแถวเดียวกับ controls อื่นๆ
+                difficulty = difficultySelect.value;
+            } else {
+                difficultySettings.style.display = 'none';
+            }
+            resetGame();
+        }
+
+        function handleDifficultyChange() {
+            difficulty = difficultySelect.value;
+            resetGame();
+        }
+
+        // --- ตรรกะของเกม ---
+
+        function handleCellPlayed(clickedCell, clickedCellIndex) {
+            if (boardState[clickedCellIndex] !== "" || !gameActive) {
+                return;
+            }
+
+            boardState[clickedCellIndex] = currentPlayer;
+            clickedCell.innerHTML = currentPlayer;
+            clickedCell.classList.add(currentPlayer);
+
+            handleResultValidation();
+        }
+
+        function handleResultValidation() {
+            let roundWon = false;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const winCondition = winningConditions[i];
+                let a = boardState[winCondition[0]];
+                let b = boardState[winCondition[1]];
+                let c = boardState[winCondition[2]];
+
+                if (a === '' || b === '' || c === '') {
+                    continue;
+                }
+                if (a === b && b === c) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                handleStatusDisplay(`ผู้เล่น ${currentPlayer} ชนะ! 🎉`, 'win');
+                gameActive = false;
+                return;
+            }
+
+            let roundDraw = !boardState.includes("");
+            if (roundDraw) {
+                handleStatusDisplay(`เสมอกัน! 🤝`, 'draw');
+                gameActive = false;
+                return;
+            }
+
+            changePlayer();
+        }
+
+        function changePlayer() {
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            handleStatusDisplay(`ตาของผู้เล่น ${currentPlayer}`);
+
+            // ถ้าเล่นกับบอทและเป็นตาของ O (บอท) ให้บอทเดิน
+            if (gameActive && gameMode === 'bot' && currentPlayer === 'O') {
+                // หน่วงเวลาเล็กน้อยเพื่อให้ดูสมจริง
+                setTimeout(botMove, 500); 
+            }
+        }
+
+        function handleCellClick(e) {
+            const clickedCell = e.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            // ถ้าเล่นกับบอทและเป็นตาของ O ห้ามคลิก
+            if (gameMode === 'bot' && currentPlayer === 'O') return;
+
+            handleCellPlayed(clickedCell, clickedCellIndex);
+        }
+
+        function resetGame() {
+            boardState = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            currentPlayer = "X";
+            handleStatusDisplay("ตาของผู้เล่น X");
+
+            cells.forEach(cell => {
+                cell.innerHTML = "";
+                cell.classList.remove('X', 'O');
+            });
+
+            // ถ้าเล่นกับบอทและ X ไม่ได้เริ่ม ให้บอท (O) เดินก่อนเลย
+            if (gameMode === 'bot' && currentPlayer === 'O') {
+                setTimeout(botMove, 500); 
+            }
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+
+        // --- ตรรกะของ AI (บอท) ---
+
+        function botMove() {
+            let move = -1;
+            const availableMoves = boardState
+                .map((val, index) => val === "" ? index : null)
+                .filter(val => val !== null);
+
+            if (availableMoves.length === 0) return; // เสมอแล้ว
+
+            // เลือกการเดินตามระดับความยาก
+            switch (difficulty) {
+                case 'easy':
+                    move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+                    break;
+                case 'medium':
+                    // 70% สุ่ม, 30% เดินฉลาด (พยายามชนะหรือป้องกัน)
+                    if (Math.random() < 0.3) {
+                        move = getSmartMove(availableMoves, 'O') || getSmartMove(availableMoves, 'X') || availableMoves[Math.floor(Math.random() * availableMoves.length)];
+                    } else {
+                        move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+                    }
+                    break;
+                case 'hard':
+                    // ใช้ Minimax Algorithm เพื่อหาการเดินที่ดีที่สุด
+                    move = getBestMove(availableMoves);
+                    break;
+            }
+            
+            // ตรวจสอบความถูกต้องและเดิน
+            if (move !== -1) {
+                const targetCell = document.querySelector(`.cell[data-index="${move}"]`);
+                handleCellPlayed(targetCell, move);
+            }
+        }
+
+        // AI: ตรรกะการเดินที่ฉลาด (ป้องกันและโจมตี)
+        function getSmartMove(availableMoves, player) {
+            for (let i = 0; i < availableMoves.length; i++) {
+                const move = availableMoves[i];
+                boardState[move] = player; // ลองเดิน
+                
+                let foundWin = false;
+                for (const condition of winningConditions) {
+                    let [a, b, c] = condition;
+                    if (boardState[a] === player && boardState[b] === player && boardState[c] === player) {
+                        foundWin = true;
+                        break;
+                    }
+                }
+                
+                boardState[move] = ""; // ยกเลิกการลอง
+                
+                if (foundWin) {
+                    return move; // ถ้าเดินนี้ชนะ หรือ ป้องกันคู่แข่งชนะได้
+                }
+            }
+            return null;
+        }
+
+        // AI: Minimax (ระดับยาก)
+        function getBestMove(availableMoves) {
+            let bestScore = -Infinity;
+            let bestMove = -1;
+
+            // Minimax: X คือผู้เล่น, O คือ AI
+            for (const move of availableMoves) {
+                boardState[move] = 'O'; // ลองเดิน
+                let score = minimax(boardState, 0, false);
+                boardState[move] = ''; // ยกเลิกการลอง
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+            // ถ้า Minimax คำนวณเสร็จแล้ว ให้คืนค่าการเดินที่ดีที่สุด
+            if (bestMove !== -1) return bestMove;
+            // กรณีสำรอง (ไม่ควรเกิดขึ้น)
+            return availableMoves[0]; 
+        }
+
+        const scores = {
+            'X': -10, // X ชนะ (แย่สำหรับ AI)
+            'O': 10,  // O ชนะ (ดีสำหรับ AI)
+            'tie': 0
+        };
+
+        function minimax(board, depth, isMaximizing) {
+            let result = checkWinnerMinimax(board);
+            if (result !== null) {
+                return scores[result];
+            }
+
+            const availableMoves = board
+                .map((val, index) => val === "" ? index : null)
+                .filter(val => val !== null);
+            
+            if (isMaximizing) { // Maximize for 'O' (AI)
+                let bestScore = -Infinity;
+                for (const move of availableMoves) {
+                    board[move] = 'O';
+                    let score = minimax(board, depth + 1, false);
+                    board[move] = '';
+                    bestScore = Math.max(bestScore, score);
+                }
+                return bestScore;
+            } else { // Minimize for 'X' (Human)
+                let bestScore = Infinity;
+                for (const move of availableMoves) {
+                    board[move] = 'X';
+                    let score = minimax(board, depth + 1, true);
+                    board[move] = '';
+                    bestScore = Math.min(bestScore, score);
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinnerMinimax(board) {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a]; 
+                }
+            }
+            if (!board.includes("")) {
+                return 'tie';
+            }
+            return null;
+        }
+
+        // เริ่มต้นเกมเมื่อโหลดหน้า
+        handleGameModeChange(); // เรียกครั้งแรกเพื่อตั้งค่าเริ่มต้น
+    </script>
+</body>
+</html>
